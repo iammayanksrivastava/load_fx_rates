@@ -6,7 +6,6 @@ import json
 import csv
 from typing import Optional, Dict, Any
 import io
-from datetime import datetime
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 
 load_dotenv()
@@ -54,11 +53,9 @@ def fetch_config(config_path):
         config = json.load(file)
     return config
 
-#Write the rates to csv file
-def write_file_to_blob(data: Dict[str, Any], base: str, container_name) -> Optional[str]:
 
-    current_time = datetime.now()
-    formatted_time = current_time.strftime("%y%m%d%H%M%S")
+#Write the rates to csv file and upload to blob storage
+def write_file_to_blob(data: Dict[str, Any], base: str, container_name, blob_name) -> Optional[str]:
 
     if not data or 'rates' not in data: 
         logger.error("Invalid Data: Rates are missing")
@@ -91,7 +88,7 @@ def write_file_to_blob(data: Dict[str, Any], base: str, container_name) -> Optio
         sas_token = os.getenv("sas_token")
 
         blob_service_client = BlobServiceClient(account_url=account_url, credential=sas_token)
-        blob_name = f'historical_rates_{base}_{date}_{formatted_time}.csv'
+        blob_name = blob_name
 
         try:
             blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)

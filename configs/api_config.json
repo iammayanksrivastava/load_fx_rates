@@ -1,6 +1,8 @@
 {
     "base": "EUR",
     "date": "2020-12-01",
-    "base_url": "http://api.exchangeratesapi.io/"
+    "base_url": "http://api.exchangeratesapi.io/",
+    "containername": "landing/fx_rates",
+    "blob_name": "historical_rates_{base}_{date}_{formatted_time}.csv"
   }
   

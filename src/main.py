@@ -1,5 +1,5 @@
 import os 
-from api_util import fetch_config, fetch_historical_rates, write_to_csv
+from api_util import fetch_config, fetch_historical_rates, write_file_to_blob
 from logger import setup_logger
 
 
@@ -22,6 +22,7 @@ def main():
     base = config.get("base")
     date = config.get("date")
     base_url= config.get("base_url")  
+    container_name=config.get("containername")
 
     if not all([base,date,base_url]):
         logger.error("Missing Configuration. Please ensure you have update the configuration file with all details")
@@ -31,7 +32,7 @@ def main():
     historical_rates = fetch_historical_rates(base, date, base_url)
 
     if historical_rates: 
-        csv_content = write_to_csv(historical_rates, base)
+        csv_content = write_file_to_blob(historical_rates, base, container_name)
         print(csv_content)
         logger.info("Historical rates fetched succesfully")
     else: 

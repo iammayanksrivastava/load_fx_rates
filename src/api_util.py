@@ -7,13 +7,9 @@ import csv
 from typing import Optional, Dict, Any
 import io
 from datetime import datetime
-
+from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 
 load_dotenv()
-
-current_time = datetime.now()
-formatted_time = current_time.strftime("%y%m%d%H%M%S")
-
 
 #Initialize logger
 logger  = setup_logger(__name__)
@@ -27,7 +23,7 @@ def fetch_historical_rates(base, date, base_url):
     """
 
     api_key = os.getenv("api_key")
-
+    
     if not api_key: 
         logger.error("API Key Not Found")
         return None
@@ -36,13 +32,11 @@ def fetch_historical_rates(base, date, base_url):
 
     try: 
         response = requests.get(url)
-        print(response)
-        print(f"Response status code: {response.status_code}")
-        print(f"Response content: {response.content}")
+        logger.debug(f"Response status code: {response.status_code}")
+        logger.debug(f"Response content: {response.content}")
         response.raise_for_status()
 
         data = response.json()
-        print(f"Data received: {data}")  # Print the data to the console.
         logger.info(f"Historical rates fetched successfully for {base} on {date}")
         return data 
     
@@ -61,7 +55,10 @@ def fetch_config(config_path):
     return config
 
 #Write the rates to csv file
-def write_to_csv(data: Dict[str, Any], base: str) -> Optional[str]:
+def write_file_to_blob(data: Dict[str, Any], base: str, container_name) -> Optional[str]:
+
+    current_time = datetime.now()
+    formatted_time = current_time.strftime("%y%m%d%H%M%S")
 
     if not data or 'rates' not in data: 
         logger.error("Invalid Data: Rates are missing")
@@ -88,16 +85,19 @@ def write_to_csv(data: Dict[str, Any], base: str) -> Optional[str]:
 
         csv_content = output.getvalue()
 
-        ## This part of the code writes the data to a csv file. 
-        file = None
-        
-        try: 
-            with(open(f'../data/historical_rates_{base}_{date}_{formatted_time}.csv', 'w', newline='')) as file:
-                file.write(output.getvalue())
-                logger.info(f'File extracted with historical rates of {date} and {base}')
-        
+        #This part works to upload the data to the blob storage. 
+
+        account_url = os.getenv("account_url")
+        sas_token = os.getenv("sas_token")
+
+        blob_service_client = BlobServiceClient(account_url=account_url, credential=sas_token)
+        blob_name = f'historical_rates_{base}_{date}_{formatted_time}.csv'
+
+        try:
+            blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
+            blob_client.upload_blob(csv_content, overwrite=True)
+            logger.info(f'File {blob_name} uploaded with historical rates of {date} and {base} to ')
+            return True
         except Exception as e: 
             logger.error(f"An error occurred: {e}", exc_info=True)
-            return False
-        finally: 
-            output.close()
+            return None

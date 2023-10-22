@@ -85,6 +85,10 @@ def write_to_csv(data: Dict[str, Any], base: str) -> Optional[str]:
                 'rate': rate
             })
         
+
+        csv_content = output.getvalue()
+
+        ## This part of the code writes the data to a csv file. 
         file = None
         
         try: 

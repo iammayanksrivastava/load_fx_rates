@@ -1,0 +1,2 @@
+requests==2.31.0  # As of my last update, check for the latest version
+python-dotenv==1.0.0  # As of my last update, check for the latest version

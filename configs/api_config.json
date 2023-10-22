@@ -1,0 +1,6 @@
+{
+    "base": "EUR",
+    "date": "2020-12-01",
+    "base_url": "http://api.exchangeratesapi.io/"
+  }
+  
